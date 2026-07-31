@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lantaw-Dagat Monitoring Station</title>
+    <link rel="stylesheet" href="lib/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <div id="fleet-panel">
+        <div>
+            <div class="panel-header">Fleet Status</div>
+            <div id="vessel-list">
+                <!-- Populated via WebSocket -->
+            </div>
+        </div>
+        
+        <div>
+            <div class="panel-header">PAGASA Advisory</div>
+            <div id="weather-feed" style="font-size: 0.9rem; color: #bbb;">
+                Awaiting offline manual input or cached update...
+            </div>
+        </div>
+
+        <button class="rtp-btn" onclick="triggerRTP()">BROADCAST RETURN-TO-PORT</button>
+    </div>
+
+    <div id="map-container"></div>
+
+    <div id="diagnostics-panel">
+        <div class="metric-box">
+            <div>Speed (knots)</div>
+            <div class="metric-value" id="diag-speed">--</div>
+        </div>
+        <div class="metric-box">
+            <div>Heading</div>
+            <div class="metric-value" id="diag-heading">--</div>
+        </div>
+        <div class="metric-box">
+            <div>Battery Voltage</div>
+            <div class="metric-value" id="diag-battery">--</div>
+        </div>
+        <div class="metric-box">
+            <div>Last Update</div>
+            <div class="metric-value" id="diag-time">--</div>
+        </div>
+    </div>
+
+    <script src="lib/leaflet/leaflet.js"></script>
+    <script>
+        const map = L.map('map-container').setView([11.2, 123.7], 11); 
+
+        L.tileLayer('http://localhost/lantaw-dagat/tiles/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: 'Offline OSM Data'
+        }).addTo(map);
+
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 200);
+
+        const vesselMarkers = {};
+        const vesselPaths = {};
+
+        const ws = new WebSocket('ws://localhost:1880/ws/telemetry');
+
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            updateVesselData(data);
+        };
+
+        function updateVesselData(data) {
+            const { id, lat, lon, status, speed, heading, battery, timestamp } = data;
+
+            if (!vesselMarkers[id]) {
+                vesselMarkers[id] = L.marker([lat, lon]).addTo(map);
+                vesselPaths[id] = L.polyline([], {color: '#007bff'}).addTo(map);
+            }
+            vesselMarkers[id].setLatLng([lat, lon]);
+            vesselPaths[id].addLatLng([lat, lon]);
+
+            let listHtml = '';
+            const statusClass = status === 'SOS' ? 'status-sos' : 'status-normal';
+            listHtml += `
+                <div class="vessel-item" onclick="updateDiagnostics('${id}')">
+                    <span>${id}</span>
+                    <span class="${statusClass}">${status}</span>
+                </div>`;
+            document.getElementById('vessel-list').innerHTML = listHtml; 
+
+            window.latestTelemetry = window.latestTelemetry || {};
+            window.latestTelemetry[id] = data;
+        }
+
+        function updateDiagnostics(id) {
+            const data = window.latestTelemetry[id];
+            if(data) {
+                document.getElementById('diag-speed').innerText = data.speed;
+                document.getElementById('diag-heading').innerText = data.heading + '°';
+                document.getElementById('diag-battery').innerText = data.battery + 'V';
+                document.getElementById('diag-time').innerText = data.timestamp;
+            }
+        }
+
+        function triggerRTP() {
+            if(confirm("Confirm Return-to-Port fleet-wide broadcast?")) {
+                const rtpPayload = { command: "RTP_BROADCAST", timestamp: new Date().toISOString() };
+                ws.send(JSON.stringify(rtpPayload));
+                alert("1-byte RTP alert command dispatched to Shoreline Gateway.");
+            }
+        }
+    </script>
+</body>
+</html>
