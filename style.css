@@ -10,7 +10,7 @@ body, html {
     margin: 0;
     padding: 0;
     height: 100vh;
-    width: 100vw; /* Added to force full width */
+    width: 100vw;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-light);
@@ -20,7 +20,7 @@ body, html {
     grid-template-areas: 
         "sidebar map"
         "sidebar diagnostics";
-    overflow-x: hidden; /* Prevents horizontal scrollbars */
+    overflow-x: hidden;
 }
 
 #fleet-panel {
@@ -89,7 +89,7 @@ body, html {
 #map-container {
     grid-area: map;
     background-color: #000;
-    width: 100%; /* Forces Leaflet to expand */
+    width: 100%;
     height: 100%;
 }
 
@@ -101,8 +101,8 @@ body, html {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 15px;
-    width: 100%; /* Forces panel to expand */
-    box-sizing: border-box; /* Keeps padding inside the width boundary */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .metric-box {
