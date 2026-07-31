@@ -52,9 +52,9 @@
     <script>
         const map = L.map('map-container').setView([11.2, 123.7], 11); 
 
-        L.tileLayer('http://localhost/lantaw-dagat/tiles/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-            attribution: 'Offline OSM Data'
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
         setTimeout(function() {
@@ -64,12 +64,26 @@
         const vesselMarkers = {};
         const vesselPaths = {};
 
-        const ws = new WebSocket('ws://localhost:1880/ws/telemetry');
+        // Telemetry Demo Simulation
+        // Replaced WebSocket connection with this interval to auto-generate data
+        setInterval(() => {
+            const lat = 11.1600 + (Math.random() * 0.04);
+            const lon = 123.8200 + (Math.random() * 0.04);
+            const status = Math.random() > 0.9 ? 'SOS' : 'NORMAL';
+            
+            const mockData = {
+                id: 'MBCA-001-Lantaw',
+                lat: lat,
+                lon: lon,
+                status: status,
+                speed: (Math.random() * 5).toFixed(1),
+                heading: Math.floor(Math.random() * 360),
+                battery: (11.5 + Math.random()).toFixed(1),
+                timestamp: new Date().toLocaleTimeString()
+            };
 
-        ws.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            updateVesselData(data);
-        };
+            updateVesselData(mockData);
+        }, 3000);
 
         function updateVesselData(data) {
             const { id, lat, lon, status, speed, heading, battery, timestamp } = data;
@@ -106,8 +120,8 @@
 
         function triggerRTP() {
             if(confirm("Confirm Return-to-Port fleet-wide broadcast?")) {
-                const rtpPayload = { command: "RTP_BROADCAST", timestamp: new Date().toISOString() };
-                ws.send(JSON.stringify(rtpPayload));
+                // ws.send() has been removed since there is no server connection in the demo
+                console.log("Mock RTP Payload generated.");
                 alert("1-byte RTP alert command dispatched to Shoreline Gateway.");
             }
         }
