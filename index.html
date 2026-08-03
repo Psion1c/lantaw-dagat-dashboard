@@ -52,9 +52,10 @@
     <script>
         const map = L.map('map-container').setView([11.2, 123.7], 11); 
 
-        L.tileLayer('http://localhost/lantaw-dagat/tiles/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-            attribution: 'Offline OSM Data'
+        // Use public OpenStreetMap tiles for quick testing when local tiles/server are unavailable
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         setTimeout(function() {
