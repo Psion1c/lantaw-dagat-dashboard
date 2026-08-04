@@ -65,3 +65,24 @@ The **Start demo feed** button in the top bar runs four simulated bangkas, one o
 which loses its GPS fix and then calls for help without one. Nothing is transmitted
 while the demo is running — the return-to-port button says so instead of pretending.
 Stop it (or connect a real gateway) before any live watch.
+
+## Deployment (GitHub Pages)
+
+To publish this static dashboard as a website via GitHub Pages:
+
+- Create a new repository on GitHub and push this project to it.
+- The supplied GitHub Actions workflow will publish the repository root to the `gh-pages` branch on pushes to `main`.
+
+Example commands (PowerShell):
+
+```powershell
+git init
+git branch -M main
+git add .
+git commit -m "Initial commit"
+# Create the remote (replace <OWNER> and <REPO>), then push:
+git remote add origin https://github.com/<OWNER>/<REPO>.git
+git push -u origin main
+```
+
+After the first push the `Deploy to GitHub Pages` workflow will run and publish the site to GitHub Pages at `https://<OWNER>.github.io/<REPO>/`.
